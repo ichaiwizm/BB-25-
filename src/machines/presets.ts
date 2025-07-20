@@ -268,6 +268,136 @@ export const sigma5BusyBeaver: BusyBeaverSpec = {
 };
 
 /**
+ * 🚨 MACHINE EXPÉRIMENTALE Σ(6) - 6 états (> 10↑↑11,010,000 pas) 🚨
+ * ATTENTION: Cette machine N'EST PAS la vraie solution Σ(6) ! Elle est NON-PROUVÉE !
+ * 
+ * Il s'agit du MEILLEUR CANDIDAT ACTUEL (juillet 2025) pour Σ(6), qui:
+ * - Dépasse déjà 10↑↑11,010,000 pas (tour de 11+ millions de dizaines)
+ * - Aucune borne supérieure connue - pourrait être infinie
+ * - Temps d'exécution estimé: PLUS QUE L'ÂGE DE L'UNIVERS × 10^googolplex
+ * 
+ * ⚠️ ESTIMATIONS TEMPORELLES APOCALYPTIQUES:
+ * Ordinateur normal (10^9 ops/sec): > 10^(10^15) siècles 
+ * Tous les supercalculateurs de la planète: > 10^(10^14) siècles
+ * 
+ * La recherche BB(6) est un des défis non-résolus les plus difficiles en informatique.
+ * Cette machine pourrait ne JAMAIS s'arrêter - nous ne le savons pas !
+ */
+export const sigma6Candidate: BusyBeaverSpec = {
+  numStates: 6,
+  numSymbols: 2,
+  name: 'Σ(6) CANDIDAT EXPÉRIMENTAL ⚠️',
+  description: '🚨 NON-PROUVÉ ! Meilleur candidat actuel pour Σ(6). Dépasse 10↑↑11M pas. Pourrait ne jamais s\'arrêter ! Temps d\'exécution: plus que l\'âge de l\'Univers × googolplex.',
+  predefinedRules: [
+    // Table de transition du meilleur candidat BB(6) - juillet 2025
+    // Source: Wikipédia + Shtetl-Optimized + theHigherGeometer
+    //           σ=0                   σ=1
+    // A : 1 R B                   0 L D
+    // B : 1 R C                   0 R F  
+    // C : 1 L C                   1 L A
+    // D : 0 L E                   1 R H  (H = halt)
+    // E : 1 L F                   0 R B
+    // F : 0 R C                   0 R E
+    
+    // État A
+    {
+      currentState: 'A',
+      readSymbol: 0,
+      writeSymbol: 1,
+      direction: 'R',
+      nextState: 'B'
+    },
+    {
+      currentState: 'A',
+      readSymbol: 1,
+      writeSymbol: 0,
+      direction: 'L',
+      nextState: 'D'
+    },
+    
+    // État B
+    {
+      currentState: 'B',
+      readSymbol: 0,
+      writeSymbol: 1,
+      direction: 'R',
+      nextState: 'C'
+    },
+    {
+      currentState: 'B',
+      readSymbol: 1,
+      writeSymbol: 0,
+      direction: 'R',
+      nextState: 'F'
+    },
+    
+    // État C - "laboureur" qui écrit des 1 vers la gauche
+    {
+      currentState: 'C',
+      readSymbol: 0,
+      writeSymbol: 1,
+      direction: 'L',
+      nextState: 'C'
+    },
+    {
+      currentState: 'C',
+      readSymbol: 1,
+      writeSymbol: 1,
+      direction: 'L',
+      nextState: 'A'
+    },
+    
+    // État D - préparation de l'explosion finale
+    {
+      currentState: 'D',
+      readSymbol: 0,
+      writeSymbol: 0,
+      direction: 'L',
+      nextState: 'E'
+    },
+    {
+      currentState: 'D',
+      readSymbol: 1,
+      writeSymbol: 1,
+      direction: 'R',
+      nextState: 'halt' // ← ARRÊT FINAL (après une éternité)
+    },
+    
+    // État E
+    {
+      currentState: 'E',
+      readSymbol: 0,
+      writeSymbol: 1,
+      direction: 'L',
+      nextState: 'F'
+    },
+    {
+      currentState: 'E',
+      readSymbol: 1,
+      writeSymbol: 0,
+      direction: 'R',
+      nextState: 'B'
+    },
+    
+    // État F
+    {
+      currentState: 'F',
+      readSymbol: 0,
+      writeSymbol: 0,
+      direction: 'R',
+      nextState: 'C'
+    },
+    {
+      currentState: 'F',
+      readSymbol: 1,
+      writeSymbol: 0,
+      direction: 'R',
+      nextState: 'E'
+    }
+  ]
+};
+
+/**
  * Machine de test simple (pour debug)
  * Score maximal: 2 symboles 1
  */
@@ -304,6 +434,7 @@ export const perfectMachinesMap: Record<string, BusyBeaverSpec> = {
   'Σ(3) - 14 pas, 6×"1"': sigma3BusyBeaver,
   'Σ(4) - 107 pas, 13×"1"': sigma4BusyBeaver,
   'Σ(5) - 47M pas, 4098×"1"': sigma5BusyBeaver,
+  'Σ(6) ⚠️ EXPÉRIMENTAL': sigma6Candidate,
 };
 
 /**

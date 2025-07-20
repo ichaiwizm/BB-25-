@@ -196,7 +196,23 @@ export const ModernSimulator: React.FC = () => {
     if (name.includes('Σ(3)')) return 14;
     if (name.includes('Σ(4)')) return 107;
     if (name.includes('Σ(5)')) return 47176870;
+    if (name.includes('Σ(6)')) return 10 ** 15; // Approximation TRÈS conservatrice de 10↑↑11M (impossible à représenter)
     return 1000; // fallback
+  };
+
+  const getSigma6Warning = (): string | null => {
+    const name = state.machine?.name || '';
+    if (!name.includes('Σ(6)')) return null;
+    
+    return `🚨 MACHINE EXPÉRIMENTALE Σ(6) - NON-PROUVÉE ! 🚨
+Cette machine pourrait ne JAMAIS s'arrêter !
+
+📊 ESTIMATIONS APOCALYPTIQUES:
+• Ordinateur normal (1 GHz): > 10^(10^15) siècles
+• Tous les supercalculateurs: > 10^(10^14) siècles
+• Plus que l'âge de l'Univers × googolplex !
+
+⚠️ BB(6) reste un mystère non-résolu de l'informatique.`;
   };
 
   const getEstimatedTimeRemaining = (): string => {
@@ -565,6 +581,7 @@ export const ModernSimulator: React.FC = () => {
               showExplanations={showExplanations}
               currentExplanation={currentExplanation}
               performanceMode={performanceMode}
+              getSigma6Warning={getSigma6Warning}
             />
           )}
         </div>
@@ -617,9 +634,10 @@ interface TapeVisualizationProps {
   showExplanations: boolean;
   currentExplanation: string;
   performanceMode: 'detailed' | 'normal' | 'fast' | 'turbo';
+  getSigma6Warning?: () => string | null;
 }
 
-const TapeVisualization: React.FC<TapeVisualizationProps> = ({ state, formatState, getCurrentScore, getEstimatedSteps, showExplanations, currentExplanation, performanceMode }) => {
+const TapeVisualization: React.FC<TapeVisualizationProps> = ({ state, formatState, getCurrentScore, getEstimatedSteps, showExplanations, currentExplanation, performanceMode, getSigma6Warning }) => {
   if (!state.currentState) return null;
 
   const headPos = state.currentState.tape.headPosition;
@@ -676,7 +694,7 @@ const TapeVisualization: React.FC<TapeVisualizationProps> = ({ state, formatStat
           </div>
 
           {/* Tape Cells */}
-          <div className="flex items-center justify-center space-x-1">
+          <div className="flex items-center justify-center space-x-1 overflow-x-auto max-w-full px-4">
             {positions.map((pos) => {
               const symbol = state.currentState!.tape.positions.get(pos) ?? 0;
               const isHead = pos === headPos;
@@ -762,6 +780,24 @@ const TapeVisualization: React.FC<TapeVisualizationProps> = ({ state, formatStat
             )}
           </div>
         </div>
+
+        {/* Σ(6) Warning Display - MOVED UNDER TAPE */}
+        {getSigma6Warning && getSigma6Warning() && (
+          <div className="max-w-2xl mx-auto bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-3 mt-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center animate-pulse">
+                  <span className="text-white text-lg font-bold">⚠️</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <pre className="text-xs text-red-800 font-medium whitespace-pre-wrap leading-relaxed">
+                  {getSigma6Warning()}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1004,12 +1040,25 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   <td className="px-4 py-3 font-semibold">4 098</td>
                   <td className="px-4 py-3">47 millions+</td>
                 </tr>
+                <tr className="bg-red-50 border-2 border-red-300">
+                  <td className="px-4 py-3 font-mono text-red-600 font-bold">Σ(6) ⚠️</td>
+                  <td className="px-4 py-3">6</td>
+                  <td className="px-4 py-3 font-semibold text-red-700">???</td>
+                  <td className="px-4 py-3 text-red-700 font-bold">&gt; 10↑↑11M</td>
+                </tr>
               </tbody>
             </table>
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            💡 La complexité explose rapidement ! Σ(6) et au-delà restent des mystères non résolus.
+            💡 La complexité explose rapidement ! Σ(6) reste un mystère non-résolu.
           </p>
+          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-xs text-red-700 font-medium">
+              🚨 <strong>Σ(6) EXPÉRIMENTAL:</strong> Meilleur candidat actuel (juillet 2025). 
+              NON-PROUVÉ ! Pourrait ne jamais s'arrêter. Estimation temporelle: 
+              plus que l'âge de l'Univers × googolplex.
+            </p>
+          </div>
         </div>
 
         {/* Pourquoi c'est fascinant */}
