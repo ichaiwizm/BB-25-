@@ -5,7 +5,9 @@
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
       "Bash(rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
