@@ -1,5 +1,5 @@
-import React from 'react';
-import { Target, MessageSquare } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Target, MessageSquare, TrendingUp } from 'lucide-react';
 import '../../styles/design-system.css';
 
 interface TapeVisualizationProps {
@@ -21,6 +21,40 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
   performanceMode, 
   getSigma6Warning 
 }) => {
+  const [scoreHistory, setScoreHistory] = useState<{step: number, score: number}[]>([]);
+  const [maxHistoryLength] = useState(100);
+  
+  // Mettre à jour l'historique des scores
+  useEffect(() => {
+    if (!state.currentState) return;
+    
+    const currentStep = state.currentState.stepCount || 0;
+    const currentScore = getCurrentScore();
+    
+    setScoreHistory(prev => {
+      // Éviter les doublons
+      if (prev.length > 0 && prev[prev.length - 1].step === currentStep) {
+        return prev;
+      }
+      
+      const newHistory = [...prev, { step: currentStep, score: currentScore }];
+      
+      // Limiter la taille de l'historique
+      if (newHistory.length > maxHistoryLength) {
+        return newHistory.slice(-maxHistoryLength);
+      }
+      
+      return newHistory;
+    });
+  }, [state.currentState?.stepCount, getCurrentScore]);
+  
+  // Reset l'historique quand on reset la machine
+  useEffect(() => {
+    if ((state.currentState?.stepCount || 0) === 0) {
+      setScoreHistory([]);
+    }
+  }, [state.currentState?.stepCount]);
+  
   if (!state.currentState) return null;
 
   const headPos = state.currentState.tape.headPosition;
@@ -161,6 +195,132 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Graphique en temps réel - Seulement en mode lent/normal */}
+            {state.executionState.speed <= 100 && scoreHistory.length > 1 && (
+              <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-medium text-primary">Évolution du Score</h4>
+                  <span className="text-xs text-secondary">
+                    ({scoreHistory.length} points de données)
+                  </span>
+                </div>
+                
+                {/* Mini graphique SVG */}
+                <div className="relative h-32 bg-gray-50 rounded-md overflow-hidden">
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 400 120"
+                    className="absolute inset-0"
+                  >
+                    {/* Grille de fond */}
+                    <defs>
+                      <pattern id="grid" width="40" height="24" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 24" fill="none" stroke="#e5e7eb" strokeWidth="0.5"/>
+                      </pattern>
+                    </defs>
+                    <rect width="400" height="120" fill="url(#grid)" />
+                    
+                    {/* Ligne du graphique */}
+                    {scoreHistory.length > 1 && (() => {
+                      const maxStep = Math.max(...scoreHistory.map(h => h.step));
+                      const maxScore = Math.max(...scoreHistory.map(h => h.score), 1);
+                      const minStep = Math.min(...scoreHistory.map(h => h.step));
+                      
+                      const points = scoreHistory.map(h => {
+                        const x = ((h.step - minStep) / (maxStep - minStep || 1)) * 380 + 10;
+                        const y = 110 - ((h.score / maxScore) * 100);
+                        return `${x},${y}`;
+                      }).join(' ');
+                      
+                      return (
+                        <>
+                          {/* Zone sous la courbe */}
+                          <path
+                            d={`M ${points.split(' ')[0]} 110 L ${points} L ${points.split(' ').slice(-1)[0].split(',')[0]},110 Z`}
+                            fill="rgba(59, 130, 246, 0.1)"
+                            stroke="none"
+                          />
+                          {/* Ligne principale */}
+                          <polyline
+                            points={points}
+                            fill="none"
+                            stroke="#3b82f6"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          {/* Points de données */}
+                          {scoreHistory.map((h, i) => {
+                            const x = ((h.step - minStep) / (maxStep - minStep || 1)) * 380 + 10;
+                            const y = 110 - ((h.score / maxScore) * 100);
+                            return (
+                              <circle
+                                key={i}
+                                cx={x}
+                                cy={y}
+                                r="2"
+                                fill="#3b82f6"
+                                stroke="white"
+                                strokeWidth="1"
+                              />
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
+                  </svg>
+                  
+                  {/* Légendes */}
+                  <div className="absolute bottom-1 left-2 text-xs text-gray-500">
+                    Étapes: {scoreHistory[0]?.step || 0} → {scoreHistory[scoreHistory.length - 1]?.step || 0}
+                  </div>
+                  <div className="absolute top-1 right-2 text-xs text-gray-500">
+                    Score max: {Math.max(...scoreHistory.map(h => h.score))}
+                  </div>
+                </div>
+                
+                {/* Statistiques rapides */}
+                <div className="grid grid-cols-3 gap-4 mt-3 text-xs">
+                  <div className="text-center">
+                    <div className="font-medium text-primary">
+                      {scoreHistory[scoreHistory.length - 1]?.score || 0}
+                    </div>
+                    <div className="text-gray-500">Score actuel</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-green-600">
+                      +{Math.max(...scoreHistory.map(h => h.score)) - Math.min(...scoreHistory.map(h => h.score))}
+                    </div>
+                    <div className="text-gray-500">Gain total</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-gray-700">
+                      {scoreHistory.length > 1 ? 
+                        ((scoreHistory[scoreHistory.length - 1].score - scoreHistory[0].score) / 
+                         (scoreHistory[scoreHistory.length - 1].step - scoreHistory[0].step || 1)).toFixed(2)
+                        : '0'
+                      }
+                    </div>
+                    <div className="text-gray-500">Score/étape</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Message quand le graphique est désactivé */}
+            {state.executionState.speed > 100 && (
+              <div className="max-w-2xl mx-auto bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <div className="flex items-center gap-2 text-yellow-700">
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="text-sm">
+                    Graphique désactivé en mode rapide (vitesse &gt; 100x)
+                  </span>
                 </div>
               </div>
             )}
