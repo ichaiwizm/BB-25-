@@ -1,14 +1,14 @@
 import { MachineProvider } from './context/MachineContext';
-import { SimpleHome } from './pages/SimpleHome';
+import { ModernSimulator } from './pages/ModernSimulator';
 
 /**
  * Composant racine de l'application
- * Monte l'interface simple et fonctionnelle
+ * Monte l'interface moderne Mission Control
  */
 function App() {
   return (
     <MachineProvider>
-      <SimpleHome />
+      <ModernSimulator />
     </MachineProvider>
   );
 }
