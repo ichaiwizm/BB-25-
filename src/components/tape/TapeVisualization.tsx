@@ -22,14 +22,15 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
   getSigma6Warning 
 }) => {
   const [scoreHistory, setScoreHistory] = useState<{step: number, score: number}[]>([]);
-  const [maxHistoryLength] = useState(100);
+  const [maxVisualPoints] = useState(150); // Nombre fixe de points visuels
   
-  // Mettre à jour l'historique des scores
+  // Mettre à jour l'historique des scores avec throttling selon la vitesse
   useEffect(() => {
     if (!state.currentState) return;
     
     const currentStep = state.currentState.stepCount || 0;
     const currentScore = getCurrentScore();
+    const speed = state.executionState.speed;
     
     setScoreHistory(prev => {
       // Éviter les doublons
@@ -37,16 +38,30 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
         return prev;
       }
       
-      const newHistory = [...prev, { step: currentStep, score: currentScore }];
+      // Throttling basé sur la vitesse pour éviter trop de mises à jour
+      let shouldUpdate = true;
+      if (speed > 5000) {
+        // Mode très rapide désactivé, pas de mise à jour
+        shouldUpdate = false;
+      } else if (speed > 1000) {
+        // Mode rapide : tous les 10 pas
+        shouldUpdate = currentStep % 10 === 0 || currentStep <= 10;
+      } else if (speed > 100) {
+        // Mode normal-rapide : tous les 3 pas
+        shouldUpdate = currentStep % 3 === 0 || currentStep <= 5;
+      }
+      // Mode lent (≤100) : toujours mettre à jour (shouldUpdate reste true)
       
-      // Limiter la taille de l'historique
-      if (newHistory.length > maxHistoryLength) {
-        return newHistory.slice(-maxHistoryLength);
+      if (!shouldUpdate && prev.length > 0) {
+        return prev;
       }
       
+      const newHistory = [...prev, { step: currentStep, score: currentScore }];
+      
+      // Pas de limite, on garde tout l'historique
       return newHistory;
     });
-  }, [state.currentState?.stepCount, getCurrentScore]);
+  }, [state.currentState?.stepCount, getCurrentScore, state.executionState.speed]);
   
   // Reset l'historique quand on reset la machine
   useEffect(() => {
@@ -199,14 +214,14 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
               </div>
             )}
             
-            {/* Graphique en temps réel - Seulement en mode lent/normal */}
-            {state.executionState.speed <= 100 && scoreHistory.length > 1 && (
+            {/* Graphique en temps réel - Désactivé en mode très rapide */}
+            {state.executionState.speed <= 5000 && scoreHistory.length > 1 && (
               <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="w-4 h-4 text-primary" />
                   <h4 className="text-sm font-medium text-primary">Évolution du Score</h4>
                   <span className="text-xs text-secondary">
-                    ({scoreHistory.length} points de données)
+                    ({scoreHistory.length} étapes • {scoreHistory.length > maxVisualPoints ? `${maxVisualPoints} points visuels` : 'toutes visibles'})
                   </span>
                 </div>
                 
@@ -232,7 +247,18 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
                       const maxScore = Math.max(...scoreHistory.map(h => h.score), 1);
                       const minStep = Math.min(...scoreHistory.map(h => h.step));
                       
-                      const points = scoreHistory.map(h => {
+                      // Échantillonnage intelligent pour un nombre fixe de points visuels
+                      let sampledHistory = scoreHistory;
+                      if (scoreHistory.length > maxVisualPoints) {
+                        const step = Math.ceil(scoreHistory.length / maxVisualPoints);
+                        sampledHistory = scoreHistory.filter((_, i) => i % step === 0);
+                        // Toujours garder le dernier point
+                        if (sampledHistory[sampledHistory.length - 1] !== scoreHistory[scoreHistory.length - 1]) {
+                          sampledHistory.push(scoreHistory[scoreHistory.length - 1]);
+                        }
+                      }
+                      
+                      const points = sampledHistory.map(h => {
                         const x = ((h.step - minStep) / (maxStep - minStep || 1)) * 380 + 10;
                         const y = 110 - ((h.score / maxScore) * 100);
                         return `${x},${y}`;
@@ -255,8 +281,8 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
-                          {/* Points de données */}
-                          {scoreHistory.map((h, i) => {
+                          {/* Points de données - Seulement sur les données échantillonnées */}
+                          {sampledHistory.map((h, i) => {
                             const x = ((h.step - minStep) / (maxStep - minStep || 1)) * 380 + 10;
                             const y = 110 - ((h.score / maxScore) * 100);
                             return (
@@ -313,13 +339,13 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
               </div>
             )}
             
-            {/* Message quand le graphique est désactivé */}
-            {state.executionState.speed > 100 && (
+            {/* Message quand le graphique est désactivé en mode très rapide */}
+            {state.executionState.speed > 5000 && (
               <div className="max-w-2xl mx-auto bg-yellow-50 border border-yellow-200 rounded-md p-3">
                 <div className="flex items-center gap-2 text-yellow-700">
                   <TrendingUp className="w-4 h-4" />
                   <span className="text-sm">
-                    Graphique désactivé en mode rapide (vitesse &gt; 100x)
+                    Graphique désactivé en mode très rapide (vitesse &gt; 5000x)
                   </span>
                 </div>
               </div>
