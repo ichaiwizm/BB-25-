@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/design-system.css';
 import { 
-  Play, Pause, RotateCcw, StepForward, Cpu, HelpCircle
+  Play, Pause, RotateCcw, StepForward, Cpu, HelpCircle, FolderOpen
 } from 'lucide-react';
 import { useBusyBeaver } from '../hooks/useBusyBeaver';
 import { usePerformanceMode } from '../hooks/usePerformanceMode';
 import { perfectMachinesMap } from '../machines/presets';
-import type { Rule } from '../types/turing';
+import type { Rule, TuringMachine } from '../types/turing';
 import { TapeVisualization } from '../components/tape/TapeVisualization';
 import { StatsPanel } from '../components/stats/StatsPanel';
 import { HelpModal } from '../components/help/HelpModal';
 import { RulesPanel } from '../components/rules/RulesPanel';
+import { MachineLibrary } from '../components/library/MachineLibrary';
 
 export const ModernSimulator: React.FC = () => {
   const { state, step, run, stop, reset, loadPreset, isRunning, setSpeed } = useBusyBeaver();
@@ -23,6 +24,8 @@ export const ModernSimulator: React.FC = () => {
   const [lastStepCount, setLastStepCount] = useState(0);
   const [lastStepTime, setLastStepTime] = useState(Date.now());
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showMachineLibrary, setShowMachineLibrary] = useState(false);
+  const [machineSource, setMachineSource] = useState<'preset' | 'custom'>('preset');
   
   // Performance monitoring avec hook
   const { performanceMode, getModeLabel } = usePerformanceMode(
@@ -287,6 +290,12 @@ Cette machine pourrait ne JAMAIS s'arrêter !
            `puis passer à l'état ${formatState(rule.nextState)}.`;
   };
 
+  // Charger une machine personnalisée
+  const handleLoadCustomMachine = (machine: TuringMachine) => {
+    loadPreset(machine);
+    setMachineSource('custom');
+  };
+
   // Gestion des explications automatiques
   useEffect(() => {
     const nextRule = getNextRule();
@@ -320,18 +329,32 @@ Cette machine pourrait ne JAMAIS s'arrêter !
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 <label className="form-label text-xs" style={{ marginBottom: 0 }}>Machine</label>
-                <select
-                  value={selectedPerfectMachine}
-                  onChange={(e) => setSelectedPerfectMachine(e.target.value)}
-                  className="form-control text-xs" style={{ width: 'auto', padding: '8px 12px' }}
-                >
-                  {Object.entries(perfectMachinesMap).map(([key]) => (
-                    <option key={key} value={key}>
-                      {key}
-                    </option>
-                  ))}
-                </select>
+                {machineSource === 'preset' ? (
+                  <select
+                    value={selectedPerfectMachine}
+                    onChange={(e) => setSelectedPerfectMachine(e.target.value)}
+                    className="form-control text-xs" style={{ width: 'auto', padding: '8px 12px' }}
+                  >
+                    {Object.entries(perfectMachinesMap).map(([key]) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="text-xs text-primary font-medium px-3 py-2 bg-primary/10 rounded-md">
+                    Machine personnalisée: {state.machine?.name || 'Aucune'}
+                  </span>
+                )}
               </div>
+
+              <button
+                onClick={() => setShowMachineLibrary(true)}
+                className="btn btn-ghost" style={{ padding: '8px' }}
+                title="Bibliothèque de machines"
+              >
+                <FolderOpen className="w-4 h-4" />
+              </button>
 
               <button
                 onClick={() => setShowHelpModal(true)}
@@ -469,6 +492,20 @@ Cette machine pourrait ne JAMAIS s'arrêter !
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowHelpModal(false)}>
           <div className="card card-elevated max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <HelpModal onClose={() => setShowHelpModal(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Modal bibliothèque de machines */}
+      {showMachineLibrary && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowMachineLibrary(false)}>
+          <div className="card card-elevated w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="card-content">
+              <MachineLibrary
+                onSelectMachine={handleLoadCustomMachine}
+                onClose={() => setShowMachineLibrary(false)}
+              />
+            </div>
           </div>
         </div>
       )}
