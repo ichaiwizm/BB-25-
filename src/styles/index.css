@@ -1,9 +1,0 @@
-/* Utilitaires Tailwind personnalisés */
-
-.cell {
-  @apply w-10 h-10 border flex items-center justify-center;
-}
-
-.btn {
-  @apply px-3 py-1 rounded font-semibold transition hover:opacity-80;
-} 

@@ -59,7 +59,7 @@ export const MachineEditor: React.FC<MachineEditorProps> = ({
   };
 
   // Mettre à jour une règle
-  const updateRule = (index: number, field: keyof Rule, value: any) => {
+  const updateRule = (index: number, field: keyof Rule, value: string | number) => {
     const newRules = [...rules];
     newRules[index] = { ...newRules[index], [field]: value };
     setRules(newRules);

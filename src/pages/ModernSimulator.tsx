@@ -46,11 +46,17 @@ export const ModernSimulator: React.FC = () => {
         case 'Space':
           e.preventDefault();
           if (state.currentState?.isHalted) return;
-          isRunning ? stop() : run();
+          if (isRunning) {
+            stop();
+          } else {
+            run();
+          }
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (!state.currentState?.isHalted) step();
+          if (!state.currentState?.isHalted) {
+            step();
+          }
           break;
         case 'KeyR':
           if (e.ctrlKey || e.metaKey) {
@@ -149,9 +155,9 @@ export const ModernSimulator: React.FC = () => {
   }, [state.currentState?.stepCount]);
 
   // Fonctions utilitaires
-  const formatState = (state: any): string => {
+  const formatState = (state: string | number): string => {
     if (state === 'halt') return 'HALT';
-    return state;
+    return state.toString();
   };
 
   const getCurrentScore = (): number => {

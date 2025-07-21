@@ -1,9 +1,10 @@
 import React from 'react';
 import { Activity, Clock } from 'lucide-react';
+import type { AppState } from '../../context/MachineContext';
 import '../../styles/design-system.css';
 
 interface StatsPanelProps {
-  state: any;
+  state: AppState;
   isRunning: boolean;
   executionTime: string;
   stepsPerSecond: number;

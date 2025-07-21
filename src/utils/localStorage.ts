@@ -11,6 +11,22 @@ export interface CustomMachine {
   lastModified: string;
 }
 
+interface StoredMachineData {
+  id?: string;
+  name?: string;
+  description?: string;
+  machine?: {
+    name?: string;
+    description?: string;
+    rules?: unknown[];
+    initialState?: string;
+    haltStates?: unknown[];
+    alphabet?: unknown[];
+  };
+  createdAt?: string;
+  lastModified?: string;
+}
+
 // Sauvegarder une machine personnalisée
 export const saveCustomMachine = (machine: TuringMachine): CustomMachine => {
   const customMachines = getCustomMachines();
@@ -60,21 +76,28 @@ export const getCustomMachines = (): CustomMachine[] => {
     if (!Array.isArray(machines)) return [];
     
     // Validation et conversion des données
-    return machines.map((m: any) => {
+    return machines.map((m: unknown) => {
       // Validation de base
-      if (!m || !m.machine || !m.id) {
+      const machineData = m as StoredMachineData;
+      if (!machineData || !machineData.machine || !machineData.id || !machineData.name) {
         throw new Error('Format de machine invalide');
       }
       
       return {
-        ...m,
+        id: machineData.id,
+        name: machineData.name,
+        description: machineData.description || '',
+        createdAt: machineData.createdAt || new Date().toISOString(),
+        lastModified: machineData.lastModified || new Date().toISOString(),
         machine: {
-          ...m.machine,
-          haltStates: new Set(Array.isArray(m.machine.haltStates) ? m.machine.haltStates : ['halt']),
-          alphabet: new Set(Array.isArray(m.machine.alphabet) ? m.machine.alphabet : [0, 1]),
-          rules: Array.isArray(m.machine.rules) ? m.machine.rules : []
+          name: machineData.machine.name || machineData.name,
+          description: machineData.machine.description || machineData.description || '',
+          initialState: machineData.machine.initialState || 'A',
+          haltStates: new Set(Array.isArray(machineData.machine.haltStates) ? machineData.machine.haltStates : ['halt']),
+          alphabet: new Set(Array.isArray(machineData.machine.alphabet) ? machineData.machine.alphabet : [0, 1]),
+          rules: Array.isArray(machineData.machine.rules) ? machineData.machine.rules : []
         }
-      };
+      } as CustomMachine;
     });
   } catch (error) {
     console.error('Erreur lors du chargement des machines personnalisées:', error);

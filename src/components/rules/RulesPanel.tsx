@@ -5,7 +5,7 @@ import '../../styles/design-system.css';
 interface RulesPanelProps {
   rules: Rule[];
   currentRule?: Rule | null;
-  formatState: (state: any) => string;
+  formatState: (state: string | number) => string;
 }
 
 export const RulesPanel: React.FC<RulesPanelProps> = ({ 

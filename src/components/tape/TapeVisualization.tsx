@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Target, MessageSquare, TrendingUp } from 'lucide-react';
+import type { AppState } from '../../context/MachineContext';
 import '../../styles/design-system.css';
 
 interface TapeVisualizationProps {
-  state: any;
-  formatState: (state: any) => string;
+  state: AppState;
+  formatState: (state: string | number) => string;
   getCurrentScore: () => number;
   getEstimatedSteps: () => number;
   currentExplanation: string;
