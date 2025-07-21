@@ -36,7 +36,17 @@ export const saveCustomMachine = (machine: TuringMachine): CustomMachine => {
     customMachines.push(customMachine);
   }
 
-  localStorage.setItem(CUSTOM_MACHINES_KEY, JSON.stringify(customMachines));
+  // Convertir les Sets en Arrays pour le stockage
+  const machineToStore = customMachines.map(m => ({
+    ...m,
+    machine: {
+      ...m.machine,
+      haltStates: Array.from(m.machine.haltStates),
+      alphabet: Array.from(m.machine.alphabet)
+    }
+  }));
+  
+  localStorage.setItem(CUSTOM_MACHINES_KEY, JSON.stringify(machineToStore));
   return customMachine;
 };
 
@@ -47,18 +57,29 @@ export const getCustomMachines = (): CustomMachine[] => {
     if (!stored) return [];
     
     const machines = JSON.parse(stored);
+    if (!Array.isArray(machines)) return [];
     
     // Validation et conversion des données
-    return machines.map((m: any) => ({
-      ...m,
-      machine: {
-        ...m.machine,
-        haltStates: new Set(Array.isArray(m.machine.haltStates) ? m.machine.haltStates : ['halt']),
-        alphabet: new Set(Array.isArray(m.machine.alphabet) ? m.machine.alphabet : [0, 1])
+    return machines.map((m: any) => {
+      // Validation de base
+      if (!m || !m.machine || !m.id) {
+        throw new Error('Format de machine invalide');
       }
-    }));
+      
+      return {
+        ...m,
+        machine: {
+          ...m.machine,
+          haltStates: new Set(Array.isArray(m.machine.haltStates) ? m.machine.haltStates : ['halt']),
+          alphabet: new Set(Array.isArray(m.machine.alphabet) ? m.machine.alphabet : [0, 1]),
+          rules: Array.isArray(m.machine.rules) ? m.machine.rules : []
+        }
+      };
+    });
   } catch (error) {
     console.error('Erreur lors du chargement des machines personnalisées:', error);
+    // En cas d'erreur, nettoyer le localStorage corrompu
+    localStorage.removeItem(CUSTOM_MACHINES_KEY);
     return [];
   }
 };
@@ -130,9 +151,10 @@ export const importCustomMachines = (file: File): Promise<number> => {
               finalName = `${machine.name} (${counter})`;
               counter++;
             }
-            machine.name = finalName;
+            
+            const updatedMachine = { ...machine, name: finalName };
 
-            saveCustomMachine(machine);
+            saveCustomMachine(updatedMachine);
             importedCount++;
           } catch (error) {
             console.warn('Erreur lors de l\'importation d\'une machine:', error);

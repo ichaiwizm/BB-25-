@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Download, Upload, FolderOpen, Cpu } from 'lucide-react';
+import { Plus, Edit, Trash2, Cpu } from 'lucide-react';
 import { MachineEditor } from '../editor/MachineEditor';
 import { 
   getCustomMachines, 
   saveCustomMachine, 
   deleteCustomMachine, 
-  exportCustomMachines,
-  importCustomMachines,
   getCustomMachinesStats,
   type CustomMachine 
 } from '../../utils/localStorage';
@@ -64,23 +62,6 @@ export const MachineLibrary: React.FC<MachineLibraryProps> = ({
     setShowEditor(true);
   };
 
-  // Importer des machines
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    importCustomMachines(file)
-      .then(count => {
-        alert(`${count} machine(s) importée(s) avec succès`);
-        loadCustomMachines();
-      })
-      .catch(error => {
-        alert('Erreur lors de l\'importation: ' + error.message);
-      });
-
-    // Reset l'input
-    e.target.value = '';
-  };
 
   // Formater la date
   const formatDate = (dateString: string) => {

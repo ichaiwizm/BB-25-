@@ -181,15 +181,7 @@ export const ModernSimulator: React.FC = () => {
     const name = state.machine?.name || '';
     if (!name.includes('Σ(6)')) return null;
     
-    return `🚨 MACHINE EXPÉRIMENTALE Σ(6) - NON-PROUVÉE ! 🚨
-Cette machine pourrait ne JAMAIS s'arrêter !
-
-📊 ESTIMATIONS APOCALYPTIQUES:
-• Ordinateur normal (1 GHz): > 10^(10^15) siècles
-• Tous les supercalculateurs: > 10^(10^14) siècles
-• Plus que l'âge de l'Univers × googolplex !
-
-⚠️ BB(6) reste un mystère non-résolu de l'informatique.`;
+    return `Machine non-prouvée`;
   };
 
   const getEstimatedTimeRemaining = (): string => {
@@ -296,6 +288,22 @@ Cette machine pourrait ne JAMAIS s'arrêter !
     setMachineSource('custom');
   };
 
+  // Gérer le retour aux machines prédéfinies
+  const handleBackToPresets = () => {
+    setMachineSource('preset');
+    const machineSpec = perfectMachinesMap[selectedPerfectMachine];
+    if (machineSpec) {
+      loadPreset({
+        name: machineSpec.name,
+        description: machineSpec.description,
+        rules: machineSpec.predefinedRules || [],
+        initialState: 'A',
+        haltStates: new Set(['halt']),
+        alphabet: new Set([0, 1])
+      });
+    }
+  };
+
   // Gestion des explications automatiques
   useEffect(() => {
     const nextRule = getNextRule();
@@ -342,9 +350,19 @@ Cette machine pourrait ne JAMAIS s'arrêter !
                     ))}
                   </select>
                 ) : (
-                  <span className="text-xs text-primary font-medium px-3 py-2 bg-primary/10 rounded-md">
-                    Machine personnalisée: {state.machine?.name || 'Aucune'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-primary font-medium px-3 py-2 bg-primary/10 rounded-md">
+                      Machine personnalisée: {state.machine?.name || 'Aucune'}
+                    </span>
+                    <button
+                      onClick={handleBackToPresets}
+                      className="btn btn-ghost text-xs"
+                      style={{ padding: '4px 8px' }}
+                      title="Revenir aux machines prédéfinies"
+                    >
+                      ← Prédéfinies
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -499,7 +517,7 @@ Cette machine pourrait ne JAMAIS s'arrêter !
       {/* Modal bibliothèque de machines */}
       {showMachineLibrary && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowMachineLibrary(false)}>
-          <div className="card card-elevated w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="card card-elevated max-w-4xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="card-content">
               <MachineLibrary
                 onSelectMachine={handleLoadCustomMachine}

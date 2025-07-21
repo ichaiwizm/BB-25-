@@ -286,7 +286,7 @@ export const sigma5BusyBeaver: BusyBeaverSpec = {
 export const sigma6Candidate: BusyBeaverSpec = {
   numStates: 6,
   numSymbols: 2,
-  name: 'Σ(6) CANDIDAT EXPÉRIMENTAL ⚠️',
+  name: 'Σ(6) - Candidat non-prouvé',
   description: '🚨 NON-PROUVÉ ! Meilleur candidat actuel pour Σ(6). Dépasse 10↑↑11M pas. Pourrait ne jamais s\'arrêter ! Temps d\'exécution: plus que l\'âge de l\'Univers × googolplex.',
   predefinedRules: [
     // Table de transition du meilleur candidat BB(6) - juillet 2025
@@ -434,7 +434,7 @@ export const perfectMachinesMap: Record<string, BusyBeaverSpec> = {
   'Σ(3) - 14 pas, 6×"1"': sigma3BusyBeaver,
   'Σ(4) - 107 pas, 13×"1"': sigma4BusyBeaver,
   'Σ(5) - 47M pas, 4098×"1"': sigma5BusyBeaver,
-  'Σ(6) ⚠️ EXPÉRIMENTAL': sigma6Candidate,
+  'Σ(6) - Candidat non-prouvé': sigma6Candidate,
 };
 
 /**

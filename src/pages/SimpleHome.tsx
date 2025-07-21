@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, StepForward, Info, X, Plus } from 'lucide-react';
+import { Play, Pause, RotateCcw, StepForward, Info, X } from 'lucide-react';
 import { useBusyBeaver } from '../hooks/useBusyBeaver';
 import { perfectMachinesMap } from '../machines/presets';
 import type { Rule } from '../types/turing';
@@ -62,7 +62,7 @@ export const SimpleHome: React.FC = () => {
       const logEntry = `Étape ${state.currentState.stepCount.toLocaleString()}: État ${formatState(state.currentState.currentState)} | Position ${state.currentState.tape.headPosition} | Score ${getCurrentScore()}`;
       setExecutionLog(prev => {
         // Ne pas dupliquer les entrées récentes
-        if (prev.length === 0 || !prev[0].includes(`Étape ${state.currentState.stepCount.toLocaleString()}`)) {
+        if (prev.length === 0 || !prev[0].includes(`Étape ${state.currentState?.stepCount.toLocaleString()}`)) {
           return [logEntry, ...prev.slice(0, 9)];
         }
         return prev;
@@ -372,7 +372,7 @@ export const SimpleHome: React.FC = () => {
                     }}
                     className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {Object.entries(perfectMachinesMap).map(([key, machine]) => (
+                    {Object.entries(perfectMachinesMap).map(([key]) => (
                       <option key={key} value={key}>
                         {key}
                       </option>
@@ -591,7 +591,7 @@ const CreateMachineModal: React.FC<CreateMachineModalProps> = ({ onClose, onCrea
       symbols.forEach(symbol => {
         newRules.push({
           currentState: state,
-          readSymbol: symbol,
+          readSymbol: symbol as 0 | 1,
           writeSymbol: 0,
           direction: 'R',
           nextState: 'halt'

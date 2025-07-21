@@ -266,12 +266,6 @@ export const TapeVisualization: React.FC<TapeVisualizationProps> = ({
                       
                       return (
                         <>
-                          {/* Zone sous la courbe */}
-                          <path
-                            d={`M ${points.split(' ')[0]} 110 L ${points} L ${points.split(' ').slice(-1)[0].split(',')[0]},110 Z`}
-                            fill="rgba(59, 130, 246, 0.1)"
-                            stroke="none"
-                          />
                           {/* Ligne principale */}
                           <polyline
                             points={points}

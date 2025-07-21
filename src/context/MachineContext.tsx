@@ -8,7 +8,7 @@ import type {
   Rule,
   Tape
 } from '../types/turing';
-import { simpleTestMachine, sigma2BusyBeaver } from '../machines/presets';
+import { sigma2BusyBeaver } from '../machines/presets';
 
 /**
  * État global de l'application
